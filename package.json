@@ -3,10 +3,9 @@
   "author": "Gremwiz",
   "version": "0.1.0",
   "private": true,
-  "dependencies": {
-
-  },
-  "scripts": {
-
+  "dependencies": {},
+  "scripts": {},
+  "devDependencies": {
+    "eslint": "^7.32.0"
   }
 }
