@@ -20,33 +20,36 @@ module.exports.getUsers = (req, res) => {
 };
 module.exports.getUser = (req, res) => {
   User.findById(req.params.userId)
+    .orFail(new Error("NotValidIdUser"))
     .then((user) => {
-      if (!user) {
-        return res.status(404).send({ message: "Нет пользователя с таким id" });
-      }
-      return res.status(200).send(user);
+      res.status(200).send(user);
     })
-    .catch((err) => checkErrorResponse(res, err));
+    .catch((err) => {
+      if (err.name === "NotValidIdUser") return res.status(404).send({ message: "Нет пользователя с таким id" });
+      return checkErrorResponse(res, err);
+    });
 };
 module.exports.updateUser = (req, res) => {
   const { name, about } = req.body;
   User.findOneAndUpdate(req.params.userId, { name, about }, { new: true, runValidators: true })
+    .orFail(new Error("NotValidIdUser"))
     .then((user) => {
-      if (!user) {
-        return res.status(404).send({ message: "Нет пользователя с таким id" });
-      }
-      return res.status(200).send(user);
+      res.status(200).send(user);
     })
-    .catch((err) => checkErrorResponse(res, err));
+    .catch((err) => {
+      if (err.name === "NotValidIdUser") return res.status(404).send({ message: "Нет пользователя с таким id" });
+      return checkErrorResponse(res, err);
+    });
 };
 module.exports.updateAvatar = (req, res) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(req.params.userId, { avatar }, { new: true, runValidators: true })
+    .orFail(new Error("NotValidIdUser"))
     .then((user) => {
-      if (!user) {
-        return res.status(404).send({ message: "Нет пользователя с таким id" });
-      }
-      return res.status(200).send(user);
+      res.status(200).send(user);
     })
-    .catch((err) => checkErrorResponse(res, err));
+    .catch((err) => {
+      if (err.name === "NotValidIdUser") return res.status(404).send({ message: "Нет пользователя с таким id" });
+      return checkErrorResponse(res, err);
+    });
 };

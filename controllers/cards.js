@@ -20,29 +20,34 @@ module.exports.createCard = (req, res) => {
 };
 module.exports.deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
+    .orFail(new Error("NotValidIdCard"))
     .then((card) => {
-      if (!card) return res.status(404).send({ message: "Карточки с таким id не существует" });
-      return res.status(200).send(card);
+      res.status(200).send(card);
     })
-    .catch((err) => checkErrorResponse(res, err));
+    .catch((err) => {
+      if (err.name === "NotValidIdCard") return res.status(404).send({ message: "Карточки с таким id не существует" });
+      return checkErrorResponse(res, err);
+    });
 };
 module.exports.likeCard = (req, res) => {
   Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true })
+    .orFail(new Error("NotValidIdCard"))
     .then((card) => {
-      if (!card) {
-        return res.status(400).send({ message: "Переданы некорректные данные для постановки лайка" });
-      }
-      return res.status(200).send(card);
+      res.status(200).send(card);
     })
-    .catch((err) => checkErrorResponse(res, err));
+    .catch((err) => {
+      if (err.name === "NotValidIdCard") return res.status(404).send({ message: "Переданы некорректные данные для постановки лайка" });
+      return checkErrorResponse(res, err);
+    });
 };
 module.exports.dislikeCard = (req, res) => {
   Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
+    .orFail(new Error("NotValidIdCard"))
     .then((card) => {
-      if (!card) {
-        return res.status(400).send({ message: "Переданы некорректные данные для снятии лайка" });
-      }
-      return res.status(200).send(card);
+      res.status(200).send(card);
     })
-    .catch((err) => checkErrorResponse(res, err));
+    .catch((err) => {
+      if (err.name === "NotValidIdCard") return res.status(404).send({ message: "Переданы некорректные данные для снятии лайка" });
+      return checkErrorResponse(res, err);
+    });
 };
