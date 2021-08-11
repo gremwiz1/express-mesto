@@ -86,3 +86,13 @@ module.exports.login = (req, res) => {
       return checkErrorResponse(res, err);
     });
 };
+module.exports.getInfoAboutMe = (req, res) => {
+  User.findById(req.user._id)
+    .then((user) => {
+      res.status(200).send(user);
+    })
+    .catch((err) => {
+      if (err.name === "CastError") return res.status(400).send({ message: "Некорректный id пользователя" });
+      return checkErrorResponse(res, err);
+    });
+};
