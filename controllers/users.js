@@ -1,4 +1,5 @@
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 
 const checkErrorResponse = (res, err) => {
@@ -66,6 +67,22 @@ module.exports.updateAvatar = (req, res) => {
     })
     .catch((err) => {
       if (err.message === "NotValidIdUser") return res.status(404).send({ message: "Нет пользователя с таким id" });
+      return checkErrorResponse(res, err);
+    });
+};
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign(
+        { _id: user._id },
+        "some-secret-key",
+        { expiresIn: "7d" },
+      );
+      res.status(200).send({ token });
+    })
+    .catch((err) => {
+      if (err.message === "IncorrectEmailOrPassword") return res.status(401).send({ message: "Неправильная почта или пароль" });
       return checkErrorResponse(res, err);
     });
 };
