@@ -25,7 +25,7 @@ module.exports.getUser = (req, res) => {
       res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name === "NotValidIdUser") return res.status(404).send({ message: "Нет пользователя с таким id" });
+      if (err.message === "NotValidIdUser") return res.status(404).send({ message: "Нет пользователя с таким id" });
       return checkErrorResponse(res, err);
     });
 };
@@ -37,7 +37,7 @@ module.exports.updateUser = (req, res) => {
       res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name === "NotValidIdUser") return res.status(404).send({ message: "Нет пользователя с таким id" });
+      if (err.message === "NotValidIdUser") return res.status(404).send({ message: "Нет пользователя с таким id" });
       return checkErrorResponse(res, err);
     });
 };
@@ -49,7 +49,7 @@ module.exports.updateAvatar = (req, res) => {
       res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name === "NotValidIdUser") return res.status(404).send({ message: "Нет пользователя с таким id" });
+      if (err.message === "NotValidIdUser") return res.status(404).send({ message: "Нет пользователя с таким id" });
       return checkErrorResponse(res, err);
     });
 };

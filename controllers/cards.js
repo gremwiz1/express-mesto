@@ -25,7 +25,7 @@ module.exports.deleteCard = (req, res) => {
       res.status(200).send(card);
     })
     .catch((err) => {
-      if (err.name === "NotValidIdCard") return res.status(404).send({ message: "Карточки с таким id не существует" });
+      if (err.message === "NotValidIdCard") return res.status(404).send({ message: "Карточки с таким id не существует" });
       return checkErrorResponse(res, err);
     });
 };
@@ -36,7 +36,7 @@ module.exports.likeCard = (req, res) => {
       res.status(200).send(card);
     })
     .catch((err) => {
-      if (err.name === "NotValidIdCard") return res.status(404).send({ message: "Переданы некорректные данные для постановки лайка" });
+      if (err.message === "NotValidIdCard") return res.status(404).send({ message: "Переданы некорректные данные для постановки лайка" });
       return checkErrorResponse(res, err);
     });
 };
@@ -47,7 +47,7 @@ module.exports.dislikeCard = (req, res) => {
       res.status(200).send(card);
     })
     .catch((err) => {
-      if (err.name === "NotValidIdCard") return res.status(404).send({ message: "Переданы некорректные данные для снятии лайка" });
+      if (err.message === "NotValidIdCard") return res.status(404).send({ message: "Переданы некорректные данные для снятии лайка" });
       return checkErrorResponse(res, err);
     });
 };
