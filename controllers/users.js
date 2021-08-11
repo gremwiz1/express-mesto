@@ -1,3 +1,4 @@
+const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 
 const checkErrorResponse = (res, err) => {
@@ -7,11 +8,26 @@ const checkErrorResponse = (res, err) => {
   return res.status(500).send({ message: `Ошибка на сервере: ${err}` });
 };
 module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-
-  User.create({ name, about, avatar })
-    .then((user) => res.status(200).send({ user }))
-    .catch((err) => checkErrorResponse(res, err));
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+  User.findOne({ email })
+    .then((customer) => {
+      if (customer) {
+        return Promise.reject(new Error("EmailIsExist"));
+      }
+      return bcrypt.hash(password, 10)
+        .then((hash) => {
+          User.create({
+            name, about, avatar, email, password: hash,
+          });
+        })
+        .then((user) => res.status(200).send({ user }))
+        .catch((err) => {
+          if (err.message === "EmailIsExist") return res.status(409).send({ message: "Пользователь с таким email уже существует в базе" });
+          return checkErrorResponse(res, err);
+        });
+    });
 };
 module.exports.getUsers = (req, res) => {
   User.find({})
