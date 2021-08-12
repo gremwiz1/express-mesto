@@ -25,8 +25,8 @@ const limiter = rateLimit({
   max: 100, // limit each IP to 100 requests per windowMs
 });
 const allowedCors = [
-  "https://praktikum.tk",
-  "http://praktikum.tk",
+  "https://gremwiz.backend.nomoredomains.club/",
+  "http://gremwiz.backend.nomoredomains.club/",
   "localhost:3000",
 ];
 const app = express();
