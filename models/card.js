@@ -13,7 +13,7 @@ const cardSchema = new mongoose.Schema({
     required: true,
     validate: {
       validator: (v) => isURL(v),
-      message: "Поле 'link' не соответствует требуемому формату URL",
+      message: "Поле link не является ссылкой",
     },
   },
   owner: {
