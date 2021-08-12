@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const helmet = require("helmet");
+const { celebrate, errors, Joi } = require("celebrate");
 const usersRouter = require("./routes/users");
 const cardsRouter = require("./routes/cards");
 const errorsRouter = require("./routes/errors");
@@ -18,12 +19,26 @@ mongoose.connect("mongodb://localhost:27017/mestodb", {
   useFindAndModify: false,
 });
 
-app.post("/signin", login);
-app.post("signup", createUser);
+app.post("/signin", celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(8),
+  }),
+}), login);
+app.post("signup", celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(8),
+    name: Joi.string().min(2).max(30),
+    avatar: Joi.string().pattern(new RegExp(/^(http|https):\/\/(www\.)?[\w-._~:/?#[\]@!$&'()*+,;=%]+#?$/i)),
+    about: Joi.string().min(2).max(30),
+  }),
+}), createUser);
 app.use(auth);
 app.use("/", usersRouter);
 app.use("/", cardsRouter);
 app.use("*", errorsRouter);
+app.use(errors()); // обработчик ошибок celebrate
 app.use(errorsMiddlewares);
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
