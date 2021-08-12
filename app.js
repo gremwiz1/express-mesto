@@ -2,6 +2,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const helmet = require("helmet");
 const { celebrate, errors, Joi } = require("celebrate");
+const { isURL } = require("validator");
+const rateLimit = require("express-rate-limit");
 const usersRouter = require("./routes/users");
 const cardsRouter = require("./routes/cards");
 const errorsRouter = require("./routes/errors");
@@ -10,6 +12,17 @@ const { login, createUser } = require("./controllers/users");
 const auth = require("./middlewares/auth");
 
 const { PORT = 3000 } = process.env;
+const method = (value) => {
+  const result = isURL(value);
+  if (result) {
+    return value;
+  }
+  throw new Error("URL validation err");
+};
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+});
 const app = express();
 app.use(helmet());
 app.use(express.json());
@@ -18,7 +31,7 @@ mongoose.connect("mongodb://localhost:27017/mestodb", {
   useCreateIndex: true,
   useFindAndModify: false,
 });
-
+app.use(limiter);
 app.post("/signin", celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
@@ -30,7 +43,7 @@ app.post("/signup", celebrate({
     email: Joi.string().required().email(),
     password: Joi.string().required().min(8),
     name: Joi.string().min(2).max(30),
-    avatar: Joi.string().pattern(new RegExp(/^(http|https):\/\/(www\.)?[\w-._~:/?#[\]@!$&'()*+,;=%]+#?$/i)),
+    avatar: Joi.string().custom(method),
     about: Joi.string().min(2).max(30),
   }),
 }), createUser);
