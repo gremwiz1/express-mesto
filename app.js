@@ -24,6 +24,11 @@ const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
 });
+const allowedCors = [
+  "https://praktikum.tk",
+  "http://praktikum.tk",
+  "localhost:3000",
+];
 const app = express();
 app.use(helmet());
 app.use(express.json());
@@ -38,6 +43,15 @@ app.get("/crash-test", () => {
   setTimeout(() => {
     throw new Error("Сервер сейчас упадёт");
   }, 0);
+});
+app.use((req, res, next) => {
+  const { origin } = req.headers; // Сохраняем источник запроса в переменную origin
+  // проверяем, что источник запроса есть среди разрешённых
+  if (allowedCors.includes(origin)) {
+    // устанавливаем заголовок, который разрешает браузеру запросы с этого источника
+    res.header("Access-Control-Allow-Origin", origin);
+  }
+  next();
 });
 app.post("/signin", celebrate({
   body: Joi.object().keys({
