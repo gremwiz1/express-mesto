@@ -1,53 +1,77 @@
 const Card = require("../models/card");
+const NotFoundError = require("../errors/not-found-err");
+const ForbiddenError = require("../errors/forbidden-err");
+const BadRequestError = require("../errors/bad-request-err");
 
-const checkErrorResponse = (res, err) => {
-  if (err.name === "CastError" || err.name === "ValidationError") {
-    return res.status(400).send({ message: `Переданы не корректные данные: ${err}` });
-  }
-  return res.status(500).send({ message: `Ошибка на сервере: ${err}` });
-};
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.status(200).send(cards))
-    .catch((err) => checkErrorResponse(res, err));
+    .catch(next);
 };
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
   Card.create({ name, link, owner })
     .then((card) => res.status(200).send(card))
-    .catch((err) => checkErrorResponse(res, err));
-};
-module.exports.deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
-    .orFail(new Error("NotValidIdCard"))
-    .then((card) => {
-      res.status(200).send(card);
-    })
     .catch((err) => {
-      if (err.message === "NotValidIdCard") return res.status(404).send({ message: "Карточки с таким id не существует" });
-      return checkErrorResponse(res, err);
+      if (err.name === "ValidationError") {
+        next(new BadRequestError(`Переданы не корректные данные: ${err}`));
+      } else {
+        next(err);
+      }
     });
 };
-module.exports.likeCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
+  Card.findById(req.params.cardId)
+    .orFail(new Error("NotValidIdCard"))
+    .then((card) => {
+      if (card.owner.toString() === req.user._id.toString()) {
+        card.remove();
+        return res.status(200).send({ message: "Карточка успешно удалена" });
+      }
+      return Promise.reject(new Error("YouNotOwnerCard"));
+    })
+    .catch((err) => {
+      if (err.message === "NotValidIdCard") {
+        next(new NotFoundError("Карточки с таким id не существует"));
+      } else if (err.message === "YouNotOwnerCard") {
+        next(new ForbiddenError("Вы не можете удалить карточку, так как вы не ее собственник"));
+      } else if (err.name === "CastError") {
+        next(new BadRequestError(`Переданы не корректные данные: ${err}`));
+      } else {
+        next(err);
+      }
+    });
+};
+module.exports.likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true })
     .orFail(new Error("NotValidIdCard"))
     .then((card) => {
       res.status(200).send(card);
     })
     .catch((err) => {
-      if (err.message === "NotValidIdCard") return res.status(404).send({ message: "Переданы некорректные данные для постановки лайка" });
-      return checkErrorResponse(res, err);
+      if (err.message === "NotValidIdCard") {
+        next(new NotFoundError("Карточки с таким id не существует"));
+      } else if (err.name === "CastError") {
+        next(new BadRequestError("Переданы некорректные данные для постановки лайка"));
+      } else {
+        next(err);
+      }
     });
 };
-module.exports.dislikeCard = (req, res) => {
+module.exports.dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
     .orFail(new Error("NotValidIdCard"))
     .then((card) => {
       res.status(200).send(card);
     })
     .catch((err) => {
-      if (err.message === "NotValidIdCard") return res.status(404).send({ message: "Переданы некорректные данные для снятии лайка" });
-      return checkErrorResponse(res, err);
+      if (err.message === "NotValidIdCard") {
+        next(new NotFoundError("Карточки с таким id не существует"));
+      } else if (err.name === "CastError") {
+        next(new BadRequestError("Переданы некорректные данные для снятия лайка"));
+      } else {
+        next(err);
+      }
     });
 };
