@@ -16,12 +16,18 @@ module.exports.createUser = (req, res, next) => {
         throw new ConflictError("Пользователь с таким email уже существует в базе");
       }
       return bcrypt.hash(password, 10)
-        .then((hash) => {
-          User.create({
-            name, about, avatar, email, password: hash,
+        .then((hash) => User.create({
+          name, about, avatar, email, password: hash,
+        }))
+        .then((user) => {
+          res.status(200).send({
+            name: user.name,
+            about: user.about,
+            avatar: user.avatar,
+            _id: user._id,
+            email: user.email,
           });
         })
-        .then((user) => res.status(200).send({ user }))
         .catch((err) => {
           if (err.name === "ValidationError") {
             next(new BadRequestError(`Переданы не корректные данные: ${err}`));
