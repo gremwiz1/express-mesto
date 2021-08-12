@@ -28,6 +28,8 @@ const allowedCors = [
   "https://gremwiz.backend.nomoredomains.club/",
   "http://gremwiz.backend.nomoredomains.club/",
   "localhost:3000",
+  "https://praktikum.tk",
+  "http://praktikum.tk",
 ];
 const app = express();
 app.use(helmet());
@@ -47,11 +49,19 @@ app.get("/crash-test", () => {
 app.use((req, res, next) => {
   const { origin } = req.headers; // Сохраняем источник запроса в переменную origin
   // проверяем, что источник запроса есть среди разрешённых
+  const { methodHttp } = req; // Сохраняем тип запроса (HTTP-метод) в соответствующую переменную
+  const requestHeaders = req.headers["access-control-request-headers"];
+  const DEFAULT_ALLOWED_METHODS = "GET,HEAD,PUT,PATCH,POST,DELETE";
   if (allowedCors.includes(origin)) {
     // устанавливаем заголовок, который разрешает браузеру запросы с этого источника
     res.header("Access-Control-Allow-Origin", origin);
   }
-  next();
+  if (methodHttp === "OPTIONS") {
+    res.header("Access-Control-Allow-Methods", DEFAULT_ALLOWED_METHODS);
+    res.header("Access-Control-Allow-Headers", requestHeaders);
+    return res.end();
+  }
+  return next();
 });
 app.post("/signin", celebrate({
   body: Joi.object().keys({
