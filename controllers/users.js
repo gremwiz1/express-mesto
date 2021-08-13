@@ -60,7 +60,7 @@ module.exports.getUser = (req, res, next) => {
 };
 module.exports.updateUser = (req, res, next) => {
   const { name, about } = req.body;
-  User.findOneAndUpdate(req.user._id, { name, about },
+  User.findByIdAndUpdate(req.user._id, { name, about },
     { new: true, runValidators: true, upsert: true })
     .orFail(new Error("NotValidIdUser"))
     .then((user) => {
