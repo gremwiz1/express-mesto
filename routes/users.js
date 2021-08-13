@@ -12,20 +12,20 @@ const method = (value) => {
   }
   throw new Error("URL validation err");
 };
-router.get("/api/users", getUsers);
-router.get("/api/users/me", getInfoAboutMe);
-router.get("/api/users/:userId", celebrate({
+router.get("/users", getUsers);
+router.get("/users/me", getInfoAboutMe);
+router.get("/users/:userId", celebrate({
   params: Joi.object().keys({
     userId: Joi.string().length(24).hex(),
   }),
 }), getUser);
-router.patch("/api/users/me", celebrate({
+router.patch("/users/me", celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
     about: Joi.string().required().min(2).max(30),
   }),
 }), updateUser);
-router.patch("/api/users/me/avatar", celebrate({
+router.patch("/users/me/avatar", celebrate({
   body: Joi.object().keys({
     avatar: Joi.string().required().custom(method),
   }),
