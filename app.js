@@ -41,7 +41,7 @@ mongoose.connect("mongodb://localhost:27017/mestodb", {
 });
 app.use(limiter);
 app.use(requestLogger); // подключаем логгер запросов
-app.get("crash-test", () => {
+app.get("/api/crash-test", () => {
   setTimeout(() => {
     throw new Error("Сервер сейчас упадёт");
   }, 0);
@@ -63,13 +63,13 @@ app.use((req, res, next) => {
   }
   return next();
 });
-app.post("signin", celebrate({
+app.post("/api/signin", celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required().min(8),
   }),
 }), login);
-app.post("signup", celebrate({
+app.post("/api/signup", celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required().min(8),
@@ -79,8 +79,8 @@ app.post("signup", celebrate({
   }),
 }), createUser);
 app.use(auth);
-app.use("/", usersRouter);
-app.use("/", cardsRouter);
+app.use("/api", usersRouter);
+app.use("/api", cardsRouter);
 app.use("*", errorsRouter);
 app.use(errorLogger); // подключаем логгер ошибок
 app.use(errors()); // обработчик ошибок celebrate
